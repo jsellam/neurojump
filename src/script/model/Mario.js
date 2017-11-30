@@ -50,33 +50,37 @@ export default class Mario {
 
         }
 
-        jump(obstacleX,obstacleHeight,genome)
+        jump(input,genome)
         {
             this.genome = genome
             this.genome.score = 0
             var best = {up:0,right:0,score:0}
 
-            var inputs= [
-                obstacleX,
-                obstacleHeight,
-                0,
-                0
-            ]
-            
+   
+            var bestInput = []
             for(var up=300;up<500;up+=2)
             {
                 for(var right=100;right<300;right+=2)
                 {
-                    inputs[2] = (up-300)/200
-                    inputs[3] = (right-100)/200
-                    var score = this.genome.activate(inputs)[0];
+                    input[2] = (up-300)/200
+                    input[3] = (right-100)/200
+                    var score = this.genome.noTraceActivate(input)[0];
+
                     if(score > best.score){
                         best.score = score;
                         best.up = up
                         best.right = right
+                        bestInput = input.concat([])
                     }
                 }
             }
+            this.genome.activate(bestInput)
+            if(this.id == 0)
+            {
+                console.log(bestInput)
+                console.log("best score : ",best.score)
+            }
+            
 
             this.game.time.events.add(this.id*100,()=>{
                 this.mario.body.moveUp(best.up);

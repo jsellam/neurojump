@@ -26,11 +26,11 @@ var neat = new Neat(
     {
       mutation: methods.mutation.ALL,
       popsize: marioCount,
-      mutationRate: 0.6,
-      elitism: Math.round(0.1 * marioCount),
+      mutationRate: 0.3,
+      elitism: Math.round(0.2 * marioCount),
       network: new architect.Random(
         4,
-        24,
+        0,
         1
       )
     })
@@ -38,11 +38,22 @@ var neat = new Neat(
 
 
 
-
-
-var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game-container', { preload: preload, create: create, update: update });
-
-
+var config = {
+    width:800,
+    height:600,
+    renderer: Phaser.AUTO,
+    parent: 'game-container',
+    state: {preload: preload, create: create, update: update },
+    transparent: false,
+    antialias: false,
+   //forceSetTimeOut:true,
+    disableVisibilityChange:true,
+    scaleMode: Phaser.ScaleManager.EXACT_FIT
+}
+var game =  new Phaser.Game(config)
+//var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game-container', {preload: preload, create: create, update: update });
+//game.raf.forceSetTimeOut = true
+console.log("raf : ",game.raf)
 var mario;
 var wall
 var stop
@@ -59,6 +70,11 @@ function preload() {
 }
 
 function create() {
+
+    
+   // game.stage.disableVisibilityChange = true;
+    console.log("stage ",game.stage.disableVisibilityChange)
+
     game.physics.startSystem(Phaser.Physics.P2JS);
     game.physics.p2.restitution = 0.5;
     game.physics.p2.gravity.y = 300;
@@ -125,8 +141,14 @@ function create() {
 function startGeneration()
 {
 
-    wall.body.x = Math.random()*200+400
-    wall.body.y = Math.random()*300+400
+    var x = Math.floor(Math.random()*5)
+    var y = Math.floor(Math.random()*5)
+    var inputBase = [0,0,0,0]
+    inputBase[0] = x/5
+    inputBase[1] = y/5
+
+    wall.body.x = x*20+400
+    wall.body.y = y*22+400
 
     stop.x = wall.body.x
     stop.y = wall.body.y-wall.height/2-100
@@ -142,7 +164,7 @@ function startGeneration()
         var genome = neat.population[i];
         var mario = marioList[i];
         mario.reset()
-        mario.prepareJump(px,py,genome)
+        mario.prepareJump(inputBase.concat([]),genome)
         
     }
 
@@ -154,7 +176,7 @@ function startGeneration()
 
 function evaluateGeneration()
 {
-    
+   
 
     var target = {
         x:wall.body.x,
@@ -183,9 +205,10 @@ function evaluateGeneration()
             bestMario = mario
         }
     }
-
-
+    
+    //neat.evaluate()
     neat.sort();
+    console.log('Generation:', neat.generation, '- average score:', neat.getAverage());
     var newPopulation = [];
     // Elitism
     for(var i = 0; i < neat.elitism; i++){
