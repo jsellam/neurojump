@@ -16,14 +16,14 @@ var marioCount = 50;
 
 var namesField
 var scoresField
-
+var generateNewObstacle = true
 
 var outputs = []
 for(var up=0;up<15;up++){
-    for(var right=0;right<15;right++)
+    for(var right=0;right<22;right++)
     {
         outputs.push({up:up*10+380,
-                    right:right*10+200})
+                    right:right*10+100})
     }
 }
 
@@ -49,8 +49,8 @@ var neat = new Neat(
             methods.mutation.SUB_BACK_CONN
           ],
       popsize: marioCount,
-      mutationRate: 0.6,
-      elitism: Math.round(0.2 * marioCount),
+      mutationRate: 0.3,
+      elitism: Math.round(0.1 * marioCount),
       network: new architect.Random(
         2,
         outputs.length,
@@ -160,21 +160,26 @@ function create() {
     startGeneration()
 }
 
+var inputBase
 
 function startGeneration()
 {
 
-    var x = Math.floor(Math.random()*5)
-    var y = Math.floor(Math.random()*10)
-    var inputBase = [0,0]
-    inputBase[0] = x/5
-    inputBase[1] = y/5
+    if(generateNewObstacle)
+    {
+        var x = Math.floor(Math.random()*5)
+        var y = Math.floor(Math.random()*10)
+        inputBase = [0,0]
+        inputBase[0] = x/5
+        inputBase[1] = y/5
+    
+        wall.body.x = x*40+300
+        wall.body.y = 750-y*40
+    
+        stop.x = wall.body.x
+        stop.y = wall.body.y-wall.height/2-100
+    }
 
-    wall.body.x = x*40+300
-    wall.body.y = 750-y*40
-
-    stop.x = wall.body.x
-    stop.y = wall.body.y-wall.height/2-100
    
 
 
@@ -208,7 +213,15 @@ function evaluateGeneration()
     var winCount = 0
     var maxVictories = 0
     var bestMario = null
+
+    generateNewObstacle = false
+    var bestVictories = 1
     for(var i=0;i<marioList.length;i++)
+    {
+        if(marioList[i].victories > bestVictories) bestVictories = marioList[i].victories
+    }
+
+    for(i=0;i<marioList.length;i++)
     {
         var mario = marioList[i];
         var dx = target.x-mario.mario.body.x
@@ -217,12 +230,13 @@ function evaluateGeneration()
     
       
         mario.genome.score = mario.score
-        if(mario.victories > 0) mario.genome.score+=0.5
+        mario.genome.score+= mario.victories / bestVictories
         if(mario.mario.body.y <wall.body.y-wall.height/2 && mario.score > 0 && mario.checkIfCanJump())
         {
-            mario.genome.score +=15
+            mario.genome.score +=2
             mario.victories++
             winCount++
+            generateNewObstacle = true
         } 
         if(mario.victories > maxVictories){
             maxVictories = mario.victories 
