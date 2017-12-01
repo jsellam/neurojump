@@ -42,10 +42,33 @@ export default class Mario {
             this.score = 0
         }
 
-        prepareJump(obstacleX,obstacleHeight,genome)
+        prepareJump(input,genome,outputs)
         {
-            
-                this.jump(obstacleX,obstacleHeight,genome)
+            genome.score = 0
+            this.genome = genome;
+            var result = this.genome.activate(input);
+            if(this.id == 0) console.log("result : ",result)
+            var maxResult = 0
+            var maxResultIndex = 0
+            for(var i=0;i<result.length;i++)
+            {
+                if(result[i] > maxResult)
+                {
+                    maxResult = result[i]
+                    maxResultIndex = i
+                }
+            }
+
+            if(this.id == 0)
+            {
+                console.log("max : ",maxResult,"index max : ",maxResultIndex)
+                console.log("fire : ",outputs[maxResultIndex])
+            }
+            this.game.time.events.add(this.id*100,()=>{
+                this.mario.body.moveUp(outputs[maxResultIndex].up);
+                this.mario.body.moveRight(outputs[maxResultIndex].right);
+            })
+             //   this.jump(obstacleX,obstacleHeight,genome)
             
 
         }
@@ -58,13 +81,18 @@ export default class Mario {
 
    
             var bestInput = []
-            for(var up=300;up<500;up+=2)
+            for(var up=300;up<500;up+=20)
             {
-                for(var right=100;right<300;right+=2)
+                for(var right=100;right<300;right+=20)
                 {
                     input[2] = (up-300)/200
                     input[3] = (right-100)/200
                     var score = this.genome.noTraceActivate(input)[0];
+
+                    if(this.id == 0)
+                    {
+                        console.log("up:",up,"right:",right,"score:",score)
+                    }
 
                     if(score > best.score){
                         best.score = score;

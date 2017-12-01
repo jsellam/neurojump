@@ -18,20 +18,43 @@ var namesField
 var scoresField
 
 
+var outputs = []
+for(var up=0;up<15;up++){
+    for(var right=0;right<15;right++)
+    {
+        outputs.push({up:up*10+380,
+                    right:right*10+200})
+    }
+}
+
 
 var neat = new Neat(
-    4,
-    1,
+    2,
+    outputs.length,
     null,
     {
-      mutation: methods.mutation.ALL,
+        mutation: [
+            methods.mutation.ADD_NODE,
+            methods.mutation.SUB_NODE,
+            methods.mutation.ADD_CONN,
+            methods.mutation.SUB_CONN,
+            methods.mutation.MOD_WEIGHT,
+            methods.mutation.MOD_BIAS,
+            methods.mutation.MOD_ACTIVATION,
+            methods.mutation.ADD_GATE,
+            methods.mutation.SUB_GATE,
+            methods.mutation.ADD_SELF_CONN,
+            methods.mutation.SUB_SELF_CONN,
+            methods.mutation.ADD_BACK_CONN,
+            methods.mutation.SUB_BACK_CONN
+          ],
       popsize: marioCount,
-      mutationRate: 0.3,
+      mutationRate: 0.6,
       elitism: Math.round(0.2 * marioCount),
       network: new architect.Random(
-        4,
-        0,
-        1
+        2,
+        outputs.length,
+        outputs.length
       )
     })
 
@@ -142,13 +165,13 @@ function startGeneration()
 {
 
     var x = Math.floor(Math.random()*5)
-    var y = Math.floor(Math.random()*5)
-    var inputBase = [0,0,0,0]
+    var y = Math.floor(Math.random()*10)
+    var inputBase = [0,0]
     inputBase[0] = x/5
     inputBase[1] = y/5
 
-    wall.body.x = x*20+400
-    wall.body.y = y*22+400
+    wall.body.x = x*40+300
+    wall.body.y = 750-y*40
 
     stop.x = wall.body.x
     stop.y = wall.body.y-wall.height/2-100
@@ -164,7 +187,7 @@ function startGeneration()
         var genome = neat.population[i];
         var mario = marioList[i];
         mario.reset()
-        mario.prepareJump(inputBase.concat([]),genome)
+        mario.prepareJump(inputBase,genome,outputs)
         
     }
 
@@ -194,6 +217,7 @@ function evaluateGeneration()
     
       
         mario.genome.score = mario.score
+        if(mario.victories > 0) mario.genome.score+=0.5
         if(mario.mario.body.y <wall.body.y-wall.height/2 && mario.score > 0 && mario.checkIfCanJump())
         {
             mario.genome.score +=15
@@ -212,6 +236,7 @@ function evaluateGeneration()
     var newPopulation = [];
     // Elitism
     for(var i = 0; i < neat.elitism; i++){
+        console.log("keep sorted ",neat.population[i].score)
         newPopulation.push(neat.population[i]);
       }
 
