@@ -18,19 +18,12 @@ var namesField
 var scoresField
 var generateNewObstacle = true
 
-var outputs = []
-for(var up=0;up<15;up++){
-    for(var right=0;right<22;right++)
-    {
-        outputs.push({up:up*10+380,
-                    right:right*10+100})
-    }
-}
+
 
 
 var neat = new Neat(
     2,
-    outputs.length,
+    2,
     null,
     {
         mutation: [
@@ -53,8 +46,8 @@ var neat = new Neat(
       elitism: Math.round(0.1 * marioCount),
       network: new architect.Random(
         2,
-        outputs.length,
-        outputs.length
+        0,
+        2
       )
     })
 
@@ -192,7 +185,7 @@ function startGeneration()
         var genome = neat.population[i];
         var mario = marioList[i];
         mario.reset()
-        mario.prepareJump(inputBase,genome,outputs)
+        mario.prepareJump(inputBase,genome)
         
     }
 
@@ -229,11 +222,11 @@ function evaluateGeneration()
         var dist = Math.sqrt(dx*dx+dy*dy)
     
       
-        mario.genome.score = mario.score
-        mario.genome.score+= mario.victories / bestVictories
+        //mario.genome.score = mario.score
+        //mario.genome.score+= mario.victories / bestVictories
         if(mario.mario.body.y <wall.body.y-wall.height/2 && mario.score > 0 && mario.checkIfCanJump())
         {
-            mario.genome.score +=2
+            mario.genome.score = 1
             mario.victories++
             winCount++
             generateNewObstacle = true

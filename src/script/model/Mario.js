@@ -42,7 +42,23 @@ export default class Mario {
             this.score = 0
         }
 
-        prepareJump(input,genome,outputs)
+        prepareJump(input,genome)
+        {
+            this.genome = genome;
+            this.genome.score = 0
+            var result = this.genome.activate(input);
+            var up = Math.max(0,Math.min(1,result[0]))
+            var right = Math.max(0,Math.min(1,result[1]))
+            up = up*450+100
+            right = right*250+100
+            this.game.time.events.add(this.id*100,()=>{
+                this.mario.body.moveUp(up);
+                this.mario.body.moveRight(right);
+            })
+
+        }
+
+        prepareJumpXX(input,genome,outputs)
         {
             genome.score = 0
             this.genome = genome;
